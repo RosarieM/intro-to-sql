@@ -1,0 +1,186 @@
+---
+title: "Introduction to SQL: Course Completion and Learning Notes"
+author: "Rosarie Maramag"
+date: today
+format:
+  html:
+    toc: true
+    toc-title: "Contents"
+    toc-depth: 3
+    number-sections: true
+    smooth-scroll: true
+    embed-resources: true
+---
+
+**Course:** IBM 6500\
+**Assignment:** DataCamp – Introduction to SQL
+
+# Course Completion Evidence
+
+I successfully completed the Introduction to SQL course on DataCamp on November 24, 2025. The certificate image below serves as verification of my course completion through the IBM 6500 DataCamp classroom, and it reflects my early hands-on practice with foundational relational database concepts.
+
+![](images/clipboard-3156975776.png)
+
+# Learning Notes and Key Takeaways
+
+## Selecting columns
+
+**Main ideas**
+
+Relational databases organize structured data into interconnected tables made of rows and columns, where each table represents a distinct entity such as customers, orders, or campaign tracking records. Querying these tables begins with simple selection statements that specify which columns to extract and which table to pull them from. Selecting columns lets an analyst isolate specific attributes without altering the underlying raw data. Restricting the number of rows returned makes early data exploration efficient by speeding up queries on large datasets, and basic counting operations help verify row volumes and check data completeness across key fields.
+
+**Important SQL syntax**
+
+| Syntax                   | Purpose                                   |
+|--------------------------|-------------------------------------------|
+| `SELECT ... FROM ...`    | Choose columns from a table               |
+| `SELECT *`               | Return all columns                        |
+| `SELECT DISTINCT`        | Return unique values only                 |
+| `COUNT(*)`               | Count all rows                            |
+| `COUNT(column)`          | Count non-missing values in a column      |
+| `COUNT(DISTINCT column)` | Count unique non-missing values           |
+| `LIMIT n`                | Return only the first *n* rows            |
+| `AS`                     | Give a column an alias (a temporary name) |
+
+**Example**
+
+``` sql
+SELECT DISTINCT channel
+FROM campaigns
+LIMIT 10;
+
+SELECT COUNT(*) AS total_customers,
+       COUNT(email) AS customers_with_email
+FROM customers;
+```
+
+**Explanation of the example**
+
+The first query returns up to 10 unique marketing channels from the `campaigns` table, which is a quick way to see what values exist in a column. The second query counts every row in `customers` and, separately, counts only the rows where `email` is not missing, so the two numbers can be compared to check how complete the email data is.
+
+**CEP application**
+
+Understanding these selection principles makes it straightforward to explore raw table structures, inspect customer attributes, and review campaign tracking tags before running deeper quantitative analysis for my CEP.
+
+## Filtering rows
+
+**Main ideas**
+
+Filtering lets marketers isolate specific subsets of data by applying precise rules, conditional logic, and pattern-matching operators. Filtering commands refine a query by evaluating each row against criteria such as logical conditions, numerical boundaries, and string comparisons. Combining multiple conditions with logical operators ensures that only relevant records pass through into the analysis. Pattern matching helps find partial text strings, which is useful for campaign tags, UTM parameters, or naming conventions across channels. Filtering out missing or incomplete values keeps the dataset clean for downstream evaluation.
+
+**Important SQL syntax**
+
+| Syntax | Purpose |
+|------------------------------------|------------------------------------|
+| `WHERE` | Filter rows by a condition |
+| `=`, `<>`, `<`, `>`, `<=`, `>=` | Comparison operators |
+| `AND`, `OR` | Combine multiple conditions |
+| `BETWEEN ... AND ...` | Filter within an inclusive range |
+| `IN (...)` | Match any value in a list |
+| `IS NULL`, `IS NOT NULL` | Find or exclude missing values |
+| `LIKE`, `NOT LIKE` | Pattern matching with `%` (any characters) and `_` (one character) |
+
+**Example**
+
+``` sql
+SELECT order_id, order_date, order_total
+FROM orders
+WHERE order_total >= 100
+  AND order_date BETWEEN '2025-11-01' AND '2025-11-30'
+  AND campaign_tag LIKE 'bf_%'
+  AND customer_id IS NOT NULL;
+```
+
+**Explanation of the example**
+
+This query returns orders of at least \$100 placed during November 2025 whose campaign tag starts with `bf_` (for example, a Black Friday campaign), and it excludes any orders that are missing a customer ID. All four conditions must be true for a row to appear in the results.
+
+**CEP application**
+
+Filtering is essential for audience segmentation, isolating high-value customer purchases, evaluating performance during promotional windows, and spot-checking tracking logs for missing campaign identifiers.
+
+## Aggregate functions
+
+**Main ideas**
+
+Aggregate functions summarize raw, itemized rows into broader quantitative metrics, turning granular records into actionable summaries. The core functions compute totals, averages, minimums, maximums, and row counts across an entire dataset or a targeted segment. Arithmetic can be combined with these functions to calculate custom metrics, measure performance distributions, and establish numeric ranges for different operational parameters.
+
+**Important SQL syntax**
+
+| Syntax                       | Purpose                      |
+|------------------------------|------------------------------|
+| `SUM(column)`                | Total of a numeric column    |
+| `AVG(column)`                | Average of a numeric column  |
+| `MIN(column)`, `MAX(column)` | Smallest and largest values  |
+| `COUNT(column)`              | Number of non-missing values |
+| `ROUND(value, decimals)`     | Round a result               |
+| `AS`                         | Name the calculated result   |
+
+**Example**
+
+``` sql
+SELECT SUM(order_total) AS total_revenue,
+       ROUND(AVG(order_total), 2) AS avg_order_value,
+       MIN(order_total) AS smallest_order,
+       MAX(order_total) AS largest_order
+FROM orders;
+```
+
+**Explanation of the example**
+
+This query collapses the entire `orders` table into a single row of summary metrics: total revenue, the average order value rounded to two decimals, and the smallest and largest order amounts. Each result is given a readable alias.
+
+**CEP application**
+
+These skills are the foundation for measuring total campaign revenue, finding average order values, calculating conversion rates, and tracking spend ranges across test markets or promotional channels.
+
+## Sorting and grouping
+
+**Main ideas**
+
+Grouping collapses matching records into distinct summary categories so that aggregate calculations run within each segment rather than across the whole table at once. After grouping, post-aggregation filtering isolates the categories that meet a numerical threshold, which is different from row-level filtering done before grouping. Sorting then organizes the final output in ascending or descending order so that key patterns stand out.
+
+**Important SQL syntax**
+
+| Syntax | Purpose |
+|------------------------------------|------------------------------------|
+| `GROUP BY column` | Split rows into groups for aggregation |
+| `HAVING` | Filter groups after aggregation |
+| `ORDER BY column [ASC \| DESC]` | Sort the results |
+| `WHERE` vs. `HAVING` | `WHERE` filters rows before grouping; `HAVING` filters groups after |
+
+**Example**
+
+``` sql
+SELECT channel,
+       COUNT(*) AS orders,
+       ROUND(AVG(order_total), 2) AS avg_order_value
+FROM orders
+WHERE order_date >= '2025-01-01'
+GROUP BY channel
+HAVING COUNT(*) >= 50
+ORDER BY avg_order_value DESC;
+```
+
+**Explanation of the example**
+
+The query first keeps only orders from 2025 onward (`WHERE`), then groups them by acquisition channel and calculates the number of orders and average order value for each channel. `HAVING` drops channels with fewer than 50 orders, and `ORDER BY ... DESC` lists the channels from highest to lowest average order value.
+
+**CEP application**
+
+Grouping and sorting form the backbone of channel and audience analysis. They make it simple to compare total traffic, average order values, and conversion performance by acquisition channel, product line, or geographic segment, so that strategic decisions rest on clearly organized performance data.
+
+# Overall Reflection and Future Reference
+
+**Most useful skills.** Combining summary calculations with categorical grouping and post-aggregation filtering was the most rewarding part of this course, because it gave me a direct framework for turning raw transaction logs into clear business insights.
+
+**Most challenging concepts.** The most challenging aspect was keeping the logical order of a query clear, particularly distinguishing row-level filters applied early (`WHERE`) from filters applied to grouped metrics (`HAVING`).
+
+**Support for digital marketing and the CEP.** SQL is valuable for digital marketing analytics, survey evaluation, and strategic project work because it lets marketers query raw tracking data, build performance summaries, and uncover customer insights independently, without relying on pre-built reports.
+
+**Concepts to review again.** As datasets grow in size and complexity, I expect to review multi-dimensional grouping, advanced pattern matching, and handling of missing values so that my queries stay accurate and efficient.
+
+# Appendix: Publication Links
+
+-   [GitHub Repository](https://github.com/YOUR-USERNAME/ibm-6500-sql-learning-portfolio)
+-   [Published Introduction to SQL Report](https://YOUR-USERNAME.github.io/ibm-6500-sql-learning-portfolio/introduction-to-sql.html)
